@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('partnership_id')->unsigned();
+            $table->integer('partnership_id')->nullable()->unsigned()->comment("Идентификатор компании");
         });
     }
 

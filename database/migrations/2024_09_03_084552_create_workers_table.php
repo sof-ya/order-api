@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('workers', function (Blueprint $table) {
             $table->id();
             $table->string("name")->comment("Имя исполнителя");
-            $table->string("second_name")->comment("Отчество исполнителя");
+            $table->string("second_name")->nullable()->comment("Отчество исполнителя");
             $table->string("surname")->comment("Фамилия исполнителя");
-            $table->string("phone")->comment("Номер телефона исполнителя");
+            $table->string("phone")->unique()->comment("Номер телефона исполнителя");
             $table->timestamps();
         });
     }
