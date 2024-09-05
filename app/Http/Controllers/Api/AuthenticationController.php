@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use App\Models\Partnership;
 use Carbon\Carbon;
 use Validator; 
 use Illuminate\Support\Str;
@@ -21,7 +20,7 @@ class AuthenticationController extends Controller
         'email' => 'required|string|email|unique:users',
         'password' => 'required|string|',
         'c_password'=>'required|same:password',
-        'partnership_id'=>'required',
+        'partnership_id'=>'required|exists:partnerships,id',
         ]);
 
         $user = new User([
@@ -31,7 +30,7 @@ class AuthenticationController extends Controller
         'partnership_id'=>$request->partnership_id,
         ]);
         $user->setRememberToken(Str::random(10));
-        if((Partnership::find($request->partnership_id)) && $user->save()){
+        if($user->save()){
         return response()->json([
             'message' => 'Пользователь успешно создан'
         ], 201);
