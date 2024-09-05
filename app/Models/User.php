@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'partnership_id'
     ];
 
     /**
@@ -49,5 +51,9 @@ class User extends Authenticatable
 
     public function orders(): HasMany {
         return $this->hasMany(Order::class);
+    }
+
+    public function partnership(): BelongsTo {
+        return $this->belongsTo(Partnership::class);
     }
 }

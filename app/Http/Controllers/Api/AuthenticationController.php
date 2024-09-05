@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Partnership;
 use Carbon\Carbon;
-use Validator;
+use Validator; 
+use Illuminate\Support\Str;
   
   
 class AuthenticationController extends Controller
@@ -19,19 +21,22 @@ class AuthenticationController extends Controller
         'email' => 'required|string|email|unique:users',
         'password' => 'required|string|',
         'c_password'=>'required|same:password',
+        'partnership_id'=>'required',
         ]);
 
         $user = new User([
         'name' => $request->name,
         'email' => $request->email,
-        'password' => bcrypt($request->password)
+        'password' => bcrypt($request->password),
+        'partnership_id'=>$request->partnership_id,
         ]);
-        if($user->save()){
+        $user->setRememberToken(Str::random(10));
+        if((Partnership::find($request->partnership_id)) && $user->save()){
         return response()->json([
-            'message' => 'Successfully created user!'
+            'message' => 'Пользователь успешно создан'
         ], 201);
         }else{
-        return response()->json(['error'=>'Provide proper details']);
+            return response()->json(['error'=>'Введите корректные данные']);
         }
     }
   
@@ -43,12 +48,15 @@ class AuthenticationController extends Controller
         'remember_me' => 'boolean'
         ]);
         $credentials = request(['email', 'password']);
-        if(!Auth::attempt($credentials))
-        return response()->json([
-            'message' => 'Unauthorized'
-        ], 401);
+        if(!Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'Не авторизован'
+            ], 401);
+        };
         $user = $request->user();
         $tokenResult = $user->createToken('Personal Access Token');
+        $user->setRememberToken(Str::random(10));
+        $user->save();
         $token = $tokenResult->token;
         if ($request->remember_me)
         $token->expires_at = Carbon::now()->addWeeks(1);
@@ -60,10 +68,6 @@ class AuthenticationController extends Controller
             $tokenResult->token->expires_at
         )->toDateTimeString()
         ]);
-
-        EncryptCookies::class;
-        AddQueuedCookiesToResponse::class;
-        StartSession::class;
     }
 
     public function user(Request $request)
@@ -75,7 +79,7 @@ class AuthenticationController extends Controller
     {
         $request->user()->token()->revoke();
         return response()->json([
-        'message' => 'Successfully logged out'
+        'message' => 'Вы успешно вышли из системы'
         ]);
     }
 }
