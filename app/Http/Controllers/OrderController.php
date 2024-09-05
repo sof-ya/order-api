@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Worker;
+use App\Models\Order;
 
-class WorkerController extends Controller
+class OrderController extends Controller
 {
     public function __invoke()
     {
-        dd(Worker::find(5)->orders()->get());
+        dd(Order::find(1)->type()->get());
     }
 }

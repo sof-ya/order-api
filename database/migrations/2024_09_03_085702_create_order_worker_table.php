@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('order_worker', function (Blueprint $table) {
             $table->string("order_id")->comment("Идентификатор заказа");
             $table->string("worker_id")->comment("Идентификатор исполнителя");
-            $table->string("amount")->comment("Количество выполняемых работ");
             $table->timestamps();
         });
     }

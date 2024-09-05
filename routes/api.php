@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkerController;
+use App\Http\Controllers\PartnershipController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderTypeController;
 use App\Http\Controllers\Api\AuthenticationController;
 
 Route::get('/user', function (Request $request) {
@@ -12,6 +15,18 @@ Route::get('/user', function (Request $request) {
 Route::middleware('auth:api')->group( function () {
     Route::get('workers', WorkerController::class);
 })->name('workers');
+
+Route::middleware('auth:api')->group( function () {
+    Route::get('partnerships', PartnershipController::class);
+})->name('partnerships');
+
+Route::middleware('auth:api')->group( function () {
+    Route::get('orders', OrderController::class);
+})->name('orders');
+
+Route::middleware('auth:api')->group( function () {
+    Route::get('order_types', OrderTypeController::class);
+})->name('order_types');
 
 Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthenticationController::class, 'login'])->name('login');
