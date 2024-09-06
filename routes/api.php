@@ -2,22 +2,17 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WorkerController;
 use App\Http\Controllers\PartnershipController;
-// use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderTypeController;
 
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\WorkerController;
 
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api')->name('get_user');
-
-Route::middleware('auth:api')->group( function () {
-    Route::get('workers', WorkerController::class);
-})->name('workers');
 
 Route::middleware('auth:api')->group( function () {
     Route::get('partnerships', PartnershipController::class);
@@ -39,3 +34,9 @@ Route::group(['prefix' => 'auth'], function () {
 });
 
 Route::apiResource('/orders', OrderController::class)->middleware('auth:api');
+Route::apiResource('/workers', WorkerController::class)->middleware('auth:api');
+
+Route::middleware('auth:api')->prefix('workers')->group( function () {
+    Route::post('{worker}/set_order', [WorkerController::class, 'setOrder'])->name('set_order');
+    Route::post('{worker}/exclude_order_type', [WorkerController::class, 'excludeOrderType'])->name('exclude_order_type');
+});

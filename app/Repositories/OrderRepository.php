@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Order;
+use App\Models\User;
 use App\Models\Partnership;
 use App\Interfaces\RecordsRepositoryInterface;
 use Illuminate\Contracts\Container\BindingResolutionException;
