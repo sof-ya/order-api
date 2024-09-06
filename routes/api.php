@@ -14,15 +14,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api')->name('get_user');
 
-Route::middleware('auth:api')->group( function () {
-    Route::get('partnerships', PartnershipController::class);
-})->name('partnerships');
-
-
-Route::middleware('auth:api')->group( function () {
-    Route::get('order_types', OrderTypeController::class);
-})->name('order_types');
-
 Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthenticationController::class, 'login'])->name('login');
     Route::post('register', [AuthenticationController::class, 'register'])->name('register');
@@ -39,4 +30,5 @@ Route::apiResource('/workers', WorkerController::class)->middleware('auth:api');
 Route::middleware('auth:api')->prefix('workers')->group( function () {
     Route::post('{worker}/set_order', [WorkerController::class, 'setOrder'])->name('set_order');
     Route::post('{worker}/exclude_order_type', [WorkerController::class, 'excludeOrderType'])->name('exclude_order_type');
+    Route::post('filter_by_order_type', [WorkerController::class, 'filterByOrderType'])->name('filter_by_order_type');
 });

@@ -2,12 +2,13 @@
 
 namespace App\Repositories;
 use App\Models\Worker;
-use App\Models\Order;
+use App\Models\OrderType;
 use App\Interfaces\RecordsRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Resources\WorkerResource;
 use Carbon\Carbon;
+use DB;
 
 class WorkerRepository implements RecordsRepositoryInterface {
 
@@ -92,12 +93,7 @@ class WorkerRepository implements RecordsRepositoryInterface {
 
         $worker = $this->getById($request, $id);
         $orderRepository = new OrderRepository;
-        $exclude_orders = $this->getById($request, $id)->exclude_orders()->get();
-
-        $ex_ids = [];
-        foreach ($exclude_orders as $order_item) {
-            array_push($ex_ids, $order_item->id); 
-        }
+        $ex_ids = $this->getById($request, $id)->exclude_orders()->pluck('id')->toArray();
 
         $order_query = $orderRepository->getByUserId($request);
 
@@ -139,5 +135,25 @@ class WorkerRepository implements RecordsRepositoryInterface {
         } 
 
         return response()->json(['message' => 'Исполнитель отказался от данного типа заказов'], 201);
+    }
+
+    // фильтр пользователей по заданному типу заказа
+    public function filterByOrderType(Request $request) {
+        $request->validate([
+            'type_id' => 'required|array',
+            'type_id.*' => 'numeric|exists:order_types,id',
+        ]);
+    
+        $query = OrderType::whereIn("id", $request->type_id)
+            ->whereNotIn('order_types.id', function ($subQuery) {
+                $subQuery->select('workers_ex_order_types.order_type_id')
+                ->from('workers_ex_order_types')
+                ->whereColumn('workers_ex_order_types.worker_id', 'workers.id');
+            }
+        );
+
+        $workers = Worker::whereExists($query)->get();
+        
+        return response()->json(WorkerResource::collection($workers));
     }
 }

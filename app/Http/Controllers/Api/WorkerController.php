@@ -42,4 +42,8 @@ class WorkerController extends Controller
     public function excludeOrderType(Worker $worker, Request $request) {
         return $this->workerRepository->excludeOrderType($request, $worker->id);
     }
+
+    public function filterByOrderType(Request $request) {
+        return $this->workerRepository->filterByOrderType($request);
+    }
 }
