@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\WorkerController;
+use App\Http\Controllers\Api\TokenController;
 
 
 Route::get('/user', function (Request $request) {
@@ -29,3 +30,7 @@ Route::middleware('auth:api')->prefix('workers')->group( function () {
     Route::post('{worker}/exclude_order_type', [WorkerController::class, 'excludeOrderType'])->name('exclude_order_type');
     Route::post('filter_by_order_type', [WorkerController::class, 'filterByOrderType'])->name('filter_by_order_type');
 });
+
+Route::post('tokens/get_tokens', [TokenController::class, 'getTokens'])->name('get_tokens')->middleware('auth:api');
+Route::post('tokens/revoke_token', [TokenController::class, 'revokeToken'])->name('revoke_token')->middleware('auth:api');
+    
