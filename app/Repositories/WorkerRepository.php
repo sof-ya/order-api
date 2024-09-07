@@ -9,15 +9,21 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Http\Resources\WorkerResource;
 use Carbon\Carbon;
 use DB;
+use App\Classes\ApiResponseClass;
+use Illuminate\Testing\Exceptions\InvalidArgumentException;
 
 class WorkerRepository implements RecordsRepositoryInterface {
 
+    public function __construct(Worker $worker) {
+        $this->worker = $worker;
+    }
+
     public function index(Request $request){
-        return WorkerResource::collection(Worker::all());
+        return WorkerResource::collection($this->worker->all());
     }
 
     public function getById(Request $request, $id){
-        return new WorkerResource(Worker::findOrFail($id));
+        return new WorkerResource($this->worker->findOrFail($id));
     }
 
     public function store(Request $request){
@@ -26,7 +32,7 @@ class WorkerRepository implements RecordsRepositoryInterface {
             'name' => 'required',
             'second_name' => 'required',            
             'surname' => 'required',
-            'phone' => 'numeric|regex:/^[0-9]{11}$/',
+            'phone' => 'numeric|regex:/^[0-9]{11}$/|unique:workers,phone',
         ]);
 
         $worker = new Worker([
@@ -36,19 +42,14 @@ class WorkerRepository implements RecordsRepositoryInterface {
             'phone' => $request->phone,
         ]);
 
-        if($worker->save()) {
-            return response()->json([
-                'message' => 'Исполнитель успешно создан'
-            ], 201);
-        } else{
-            return response()->json(['error'=>'Что-то пошло не так, данные не сохранены']);
-        }
+        $worker->save();
+        return ($worker);
     }
 
     public function update(Request $request, $id){
 
         $request->validate([
-            'phone' => 'numeric|regex:/^[0-9]{11}$/',
+            'phone' => 'numeric|regex:/^[0-9]{11}$/|unique:workers,phone',
         ]);
 
         $worker = $this->getById($request, $id);
@@ -59,27 +60,17 @@ class WorkerRepository implements RecordsRepositoryInterface {
             'surname' => $request->surname ?? $worker->surname,
             'phone' => $request->phone ?? $worker->phone
         ];
-        if($worker->update($data)
-        ) {
-            return response()->json([
-                'message' => 'Данные об исполнителе успешно обновлены'
-            ], 201);
-        } else{
-            return response()->json(['error'=>'Что-то пошло не так, данные не сохранены']);
-        }
+
+        $worker->update($data);
+        return ($worker);
     }
     
     public function delete(Request $request, $id){
 
         $worker = $this->getById($request, $id);
-
-        if($worker->delete()) {
-            return response()->json([
-                'message' => 'Данные об исполнителе удалены'
-            ], 201);
-        } else{
-            return response()->json(['error'=>'Что-то пошло не так, данные не удалены']);
-        }
+        
+        $worker->delete();
+        return ($worker);
     }
 
     /*  
@@ -101,7 +92,7 @@ class WorkerRepository implements RecordsRepositoryInterface {
         $include_order_query = $orderRepository->getByUserId($request)->whereIn('type_id', $ex_ids);
 
         if($include_order_query->find($request->order_id)) {
-            return response()->json(['error'=>'Исполнитель оказался от заказов этого типа']);
+            throw new InvalidArgumentException('Исполнитель оказался от заказов этого типа');
         } elseif ($exclude_order_query->find($request->order_id)) {
             if(!$worker->orders()->where('orders.id', $request->order_id)->exists()) {
                 $worker->orders()->attach(
@@ -110,9 +101,11 @@ class WorkerRepository implements RecordsRepositoryInterface {
                 );
             }
             $order_query->find($request->order_id)->update(['status' => "Назначен исполнитель"]);
-            return response()->json(['message' => 'Исполнитель назначен на заказ'], 201);
+            return response()->json([
+                'order' => $worker->orders()->where('orders.id', $request->order_id)->first(),
+                'worker' => $worker], 200);
         } else {
-            return response()->json(['error'=>'Заказ не найден']);
+            throw new InvalidArgumentException('Заказ не найден');
         }
     }
 
@@ -134,7 +127,9 @@ class WorkerRepository implements RecordsRepositoryInterface {
             );
         } 
 
-        return response()->json(['message' => 'Исполнитель отказался от данного типа заказов'], 201);
+        return response()->json([
+            'type' => $worker->exclude_orders()->where('workers_ex_order_types.order_type_id', $request->type_id)->first(),
+            'worker' => $worker], 200);
     }
 
     // фильтр пользователей по заданному типу заказа
@@ -144,6 +139,8 @@ class WorkerRepository implements RecordsRepositoryInterface {
             'type_id.*' => 'numeric|exists:order_types,id',
         ]);
     
+        $orderTypeRepository = new OrderTypeRepository;
+        
         $query = OrderType::whereIn("id", $request->type_id)
             ->whereNotIn('order_types.id', function ($subQuery) {
                 $subQuery->select('workers_ex_order_types.order_type_id')
@@ -152,8 +149,15 @@ class WorkerRepository implements RecordsRepositoryInterface {
             }
         );
 
-        $workers = Worker::whereExists($query)->get();
+        $array_types = [];
+
+        foreach ($request->type_id as $item) {
+            $type = $orderTypeRepository->getById($request, $item);
+            array_push($array_types, $type);
+        }
+
+        $workers = $this->worker->whereExists($query)->get();
         
-        return response()->json(WorkerResource::collection($workers));
+        return response()->json(["types" => $array_types, "workers" => WorkerResource::collection($workers)]);
     }
 }

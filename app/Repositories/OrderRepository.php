@@ -47,13 +47,9 @@ class OrderRepository implements RecordsRepositoryInterface {
             'status' => "Создан",
         ]);
 
-        if($order->save()) {
-            return response()->json([
-                'message' => 'Заказ успешно создан'
-            ], 201);
-        } else{
-            return response()->json(['error'=>'Что-то пошло не так, данные не сохранены']);
-        }
+        $order->save();
+
+        return $order;
     }
 
     public function update(Request $request, $id){
@@ -75,26 +71,18 @@ class OrderRepository implements RecordsRepositoryInterface {
             'amount' => $request->amount ?? $order->amount,
             'status' => $request->status ?? $order->status
         ];
-        if($order->update($data)
-        ) {
-            return response()->json([
-                'message' => 'Заказ успешно обновлен'
-            ], 201);
-        } else{
-            return response()->json(['error'=>'Что-то пошло не так, данные не сохранены']);
-        }
+
+        $order->update($data);
+        
+        return $order;
     }
     
     public function delete(Request $request, $id){
 
         $order = $this->getById($request, $id);
 
-        if($order->delete()) {
-            return response()->json([
-                'message' => 'Данные о заказе удалены'
-            ], 201);
-        } else{
-            return response()->json(['error'=>'Что-то пошло не так, данные не удалены']);
-        }
+        $order->delete();
+
+        return $order;
     }
 }

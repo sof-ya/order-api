@@ -1,10 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PartnershipController;
-use App\Http\Controllers\OrderTypeController;
-
+use Illuminate\Support\Facades\Route;   
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\WorkerController;

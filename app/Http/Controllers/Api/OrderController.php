@@ -4,35 +4,71 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Repositories\OrderRepository;
 use App\Models\Order;
+use App\Services\OrderService;
+use App\Classes\ApiResponseClass;
+use Exception;
 
 class OrderController extends Controller
 {
-    private OrderRepository $orderRepository;
+
+    protected OrderService $orderService;
     
-    public function __construct(OrderRepository $orderRepository)
-    {
-        $this->orderRepository = $orderRepository;
+    public function __construct(OrderService $orderService) {
+        $this->orderService = $orderService;
     }
-    
+
     public function index(Request $request) {
-        return $this->orderRepository->index($request);
+        try {
+            $orders = $this->orderService->getAll($request);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($orders,'',200);
     }
 
     public function show(Order $order, Request $request) {
-        return $this->orderRepository->getById($request, $order->id);
+
+        try {
+            $order = $this->orderService->getById($request, $order->id);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($order,'',200);
     }
 
     public function store(Request $request) {
-        return $this->orderRepository->store($request);
+
+        try {
+            $created_order = $this->orderService->store($request);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($created_order,'Заказ создан',200);
     }
 
     public function update(Order $order, Request $request) {
-        return $this->orderRepository->update($request, $order->id);
+
+        try {
+            $updated_order = $this->orderService->update($request, $order->id);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($updated_order,'Данные о заказе обновлены',200);
     }
 
     public function destroy(Order $order, Request $request) {
-        return $this->orderRepository->delete($request, $order->id);
+
+        try {
+            $deleted_order = $this->orderService->destroy($request, $order->id);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($deleted_order,'Заказ удален',200);
     }
 }
