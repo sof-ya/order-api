@@ -37,7 +37,7 @@
 
 <li>
 
-Для того, чтобы сгенерировать клиент персонального доступа, необходимо запустить `sail artisan passport:client --personal`</li>
+Для того, чтобы сгенерировать клиент персонального доступа, необходимо запустить `sail artisan passport:client --personal` и ввести `Personal Access Token`</li>
 <li>
 
 сгенерировать новый ключ в файле .env (должна быть переменная `APP_KEY`)`sail artisan key:generate`
