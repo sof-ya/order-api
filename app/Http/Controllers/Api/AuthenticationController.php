@@ -9,76 +9,58 @@ use App\Models\User;
 use Carbon\Carbon;
 use Validator; 
 use Illuminate\Support\Str;
+use App\Classes\ApiResponseClass;
+use App\Services\AuthenticationService;
   
   
 class AuthenticationController extends Controller
 {
-    public function register(Request $request)
-    {
-        $request->validate([
-        'name' => 'required|string',
-        'email' => 'required|string|email|unique:users',
-        'password' => 'required|string|',
-        'c_password'=>'required|same:password',
-        'partnership_id'=>'required|exists:partnerships,id',
-        ]);
 
-        $user = new User([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => bcrypt($request->password),
-        'partnership_id'=>$request->partnership_id,
-        ]);
-        $user->setRememberToken(Str::random(10));
-        if($user->save()){
-        return response()->json([
-            'message' => 'Пользователь успешно создан'
-        ], 201);
-        }else{
-            return response()->json(['error'=>'Введите корректные данные']);
+    protected AuthenticationService $authenticationService;
+    
+    public function __construct(AuthenticationService $authenticationService) {
+        $this->authenticationService = $authenticationService;
+    }
+
+    public function register(Request $request) {        
+        try {
+            $register = $this->authenticationService->register($request);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
         }
+        
+        return ApiResponseClass::sendResponse($register,'Пользователь успешно создан',200);
     }
   
-    public function login(Request $request)
-    {
-        $request->validate([
-        'email' => 'required|string|email',
-        'password' => 'required|string',
-        'remember_me' => 'boolean'
-        ]);
-        $credentials = request(['email', 'password']);
-        if(!Auth::attempt($credentials)) {
-            return response()->json([
-                'message' => 'Не авторизован'
-            ], 401);
-        };
-        $user = $request->user();
-        $tokenResult = $user->createToken('Personal Access Token');
-        $user->setRememberToken(Str::random(10));
-        $user->save();
-        $token = $tokenResult->token;
-        if ($request->remember_me)
-        $token->expires_at = Carbon::now()->addWeeks(1);
-        $token->save();
-        return response()->json([
-        'access_token' => $tokenResult->accessToken,
-        'token_type' => 'Bearer',
-        'expires_at' => Carbon::parse(
-            $tokenResult->token->expires_at
-        )->toDateTimeString()
-        ]);
+    public function login(Request $request) {
+        try {
+            $login = $this->authenticationService->login($request);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($login,'Вы вошли в систему',200);
     }
 
-    public function user(Request $request)
-    {
-        return response()->json($request->user());
+    public function user(Request $request) {
+
+        try {
+            $user = $request->user();
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($user,'Вы авторизованы',200);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->token()->revoke();
-        return response()->json([
-        'message' => 'Вы успешно вышли из системы'
-        ]);
+        try {
+            $logout = $this->authenticationService->logout($request);
+        } catch (Exeption $e) { 
+            ApiResponseClass::throw($e, $e->getMessage());
+        }
+        
+        return ApiResponseClass::sendResponse($logout,'Вы вышли из системы',200);
     }
 }
