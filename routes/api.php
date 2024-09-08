@@ -31,6 +31,7 @@ Route::middleware('auth:api')->prefix('workers')->group( function () {
     Route::post('filter_by_order_type', [WorkerController::class, 'filterByOrderType'])->name('filter_by_order_type');
 });
 
-Route::post('tokens/get_tokens', [TokenController::class, 'getTokens'])->name('get_tokens')->middleware('auth:api');
-Route::post('tokens/revoke_token', [TokenController::class, 'revokeToken'])->name('revoke_token')->middleware('auth:api');
-    
+Route::middleware('auth:api')->prefix('tokens')->group( function () {
+    Route::get('/', [TokenController::class, 'getTokens'])->name('get_tokens');
+    Route::post('revoke_token', [TokenController::class, 'revokeToken'])->name('revoke_token');
+});

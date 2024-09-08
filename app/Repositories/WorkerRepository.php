@@ -32,7 +32,7 @@ class WorkerRepository implements RecordsRepositoryInterface {
             'name' => 'required',
             'second_name' => 'required',            
             'surname' => 'required',
-            'phone' => 'numeric|regex:/^[0-9]{11}$/|unique:workers,phone',
+            'phone' => 'required|numeric|regex:/^[0-9]{11}$/|unique:workers,phone',
         ]);
 
         $worker = new Worker([
