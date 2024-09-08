@@ -52,3 +52,26 @@
 
 `sail up -d` - запуск сервера<br>
 `sail npm run dev` - запуск vite<br>
+
+<h2>Тестирование</h2>
+
+<h3>Swagger</h3>
+Просмотр эндпоинтов через Swagger в браузере доступен по адресу http://localhost/api/documentation.
+<h3>HTTP-клиенты (Insomnia, Postman).</h3>
+Список эндпоинтов для тестирования:
+<ul>
+<li>Авторизация (POST) - http://localhost/api/auth/register</li>
+<li>Аутентификация (POST) - http://localhost/api/auth/login</li>
+<li>Создание заказа (POST) - http://localhost/api/orders</li>
+<li>Назначение исполнителя на заказ (POST) - http://localhost/api/workers/*идентификатор*/set_order</li>
+<li>Отказ исполнителя от введенного типа заказов (POST) - http://localhost/api/workers/*идентификатор*/exclude_order_type</li>
+<li>Фильтр исполнителей по заданным типам заказов (POST) - http://localhost/api/workers/filter_by_order_type</li>
+<li>Просмотр активных токенов пользователя (GET) - http://localhost/api/tokens</li>
+<li>Отзыв токена пользователя по id (POST) - http://localhost/api/tokens/revoke_token</li>
+</ul>
+
+<h3>Авторизация</h3>
+
+>Чтобы получить токен, необходимо ввести данные пользователя в эндпоинте http://localhost/api/auth/login. В поле access_token будет выведен сгенерированный токен. 
+
+Для того, чтобы авторизоваться в Swagger, необходимо нажать зеленую кнопку вверху (или на кнопку с пиктограммой замка рядом с запросом, где требуется проверка подлинности) и ввести полученный токен. Для авторизации через клиент, необходимо в Headers передать токен с префиксом «Bearer».
